@@ -30,7 +30,7 @@ try {
 }
 catch(e) {
   console.log("Could not make page readable (error thrown on readability parsing)")
-  return 1
+  process.exit(-1)
 }
 // If readable article extracted, get the content
 if(article != null) {
@@ -38,14 +38,14 @@ if(article != null) {
 }
 else {
   console.log("Could not make page readable (no readable article generated)");
-  return 1
+  process.exit(-1)
 }
 // Write article content to disk
 fs.writeFile(output_path, readable_page, function(err) {
   if(err) {
     console.log("Could not save readable page.");
-    return 1
+    process.exit(-1)
   }
   console.log("Saved readable page to " + output_path);
-  return 0
+  process.exit(0)
 });
