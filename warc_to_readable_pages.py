@@ -47,8 +47,8 @@ def main():
             id = record.header["WARC-Record-ID"][10:-1]
             fp = record.payload
             # Open file using WARC Record ID as filenamea
-            out_path = os.path.join(args.output_dir, id)
-            with open("/Users/moreilly/commoncrawl/temp/{}.txt".format(id), 'w') as fout:
+            out_path = os.path.join(args.output_dir, "{}.txt".format(id)
+            with open(out_path, 'w') as fout:
                 while True:
                     # Discart Header rows
                     line = fp.readline()
