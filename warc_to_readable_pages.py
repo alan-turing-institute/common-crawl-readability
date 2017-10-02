@@ -3,10 +3,10 @@ import certifi
 from gzipstream import GzipStreamFile
 import os
 import subprocess
+import time
 import urllib3
 import warc
 
-DEFAULT_MAX_PAGES = 20
 
 def main():
     # Parse command line arguments
@@ -25,9 +25,6 @@ def main():
     if not(args.source_file or args.source_url):
         parser.error("--source-file or --source-url argument must be provided.")
 
-    if args.max_pages is None:
-        args.max_pages = DEFAULT_MAX_PAGES
-
     # Make sure output directories exists
     original_pages_dir = os.path.join(args.output_dir, 'original')
     readable_pages_dir = os.path.join(args.output_dir, 'readable')
@@ -45,16 +42,21 @@ def main():
         http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=certifi.where())
         # Open a streaming connection to the specified URL
         cf = http.request('GET', args.source_url, preload_content=False)
+
     # Wrap the filestream in a streamable unzipper
     f = warc.WARCFile(fileobj=GzipStreamFile(cf))
     warc_records = 0
+    warc_responses = 0
     readable_pages = 0
+    report_interval = 100
+
+    start_time = time.time()
     for record in f:
-        warc_records = warc_records + 1
-        if (warc_records > args.max_pages):
-            print("Reached maximum WARC records ({})".format(args.max_pages))
-            break
         if record['WARC-Type'] == 'response':
+            if (args.max_pages and warc_responses > args.max_pages):
+                print("Reached maximum WARC responses ({})".format(args.max_pages))
+                break
+            warc_responses = warc_responses + 1
             try:
                 id = record.header["WARC-Record-ID"][10:-1]
                 fp = record.payload
@@ -82,7 +84,12 @@ def main():
                 os.remove(original_page_path)
             except:
                 pass
+            if warc_responses % report_interval == 0:
+                print("Processed {} WARC pages ({} readable pages)".format(
+                    warc_responses, readable_pages))
 
+    print("Processed {} WARC pages ({} readable pages) in ".format(
+        warc_responses, readable_pages, time.time() - start_time))
 
 if __name__ == "__main__":
     main()
