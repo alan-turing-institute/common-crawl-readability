@@ -1,9 +1,9 @@
 import argparse
+import arrow
 import certifi
 from gzipstream import GzipStreamFile
 import os
 import subprocess
-import time
 import urllib3
 import warc
 
@@ -50,10 +50,10 @@ def main():
     readable_pages = 0
     report_interval = 100
 
-    start_time = time.time()
+    start_time = arrow.utcnow()
     for record in f:
         if record['WARC-Type'] == 'response':
-            if (args.max_pages and warc_responses > args.max_pages):
+            if (args.max_pages and warc_responses >= args.max_pages):
                 print("Reached maximum WARC responses ({})".format(args.max_pages))
                 break
             warc_responses = warc_responses + 1
@@ -87,9 +87,10 @@ def main():
             if warc_responses % report_interval == 0:
                 print("Processed {} WARC pages ({} readable pages)".format(
                     warc_responses, readable_pages))
-
-    print("Processed {} WARC pages ({} readable pages) in ".format(
-        warc_responses, readable_pages, time.time() - start_time))
+    end_time = arrow.utcnow()
+    elapsed_time = end_time - start_time
+    print("Processed {} WARC pages ({} readable pages) in {}".format(
+        warc_responses, readable_pages, elapsed_time))
 
 if __name__ == "__main__":
     main()
