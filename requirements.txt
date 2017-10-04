@@ -1,0 +1,7 @@
+argparse
+arrow
+certifi
+gzipstream
+subprocess
+urllib3
+warc
