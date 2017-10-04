@@ -1,7 +1,6 @@
 argparse
 arrow
 certifi
-gzipstream
-subprocess
+-e git+https://github.com/commoncrawl/gzipstream.git#egg=gzipstream
 urllib3
 warc
